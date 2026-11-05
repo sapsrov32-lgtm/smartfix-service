@@ -1032,10 +1032,34 @@ h1, h2, h3, h4 {
     line-height: 1;
 }
 
-.price-card__btn {
+.price-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     width: 100%;
-    text-align: center;
     margin-top: auto;
+}
+
+.price-card__btn {
+    flex: 1;
+    text-align: center;
+}
+
+.price-card__reviews-btn {
+    padding: 0.6rem 0.95rem;
+    font-size: 0.85rem;
+    color: var(--text-on-dark-muted);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-pill);
+    transition: all 0.25s var(--ease-out);
+    white-space: nowrap;
+}
+
+.price-card__reviews-btn:hover {
+    color: var(--text-on-dark);
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    transform: translateY(-2px);
 }
 
 /* =================================================================
