@@ -583,7 +583,7 @@
                         <svg class="faq-item__chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                     </summary>
                     <div class="faq-item__answer">
-                        <p>Выезд мастера бесплатный. Мастер назовёт точную стоимость после осмотра, до начала работ. Если цена не подойдёт — ничего платить не нужно.</p>
+                        <p>Стоимость вызова мастера фиксированная и указана в блоке «Цены» (от 300 до 800 сом в зависимости от категории мастера). Точную стоимость предстоящих ремонтных работ мастер назовёт после осмотра на месте, до начала выполнения.</p>
                     </div>
                 </details>
 
@@ -648,10 +648,17 @@
             <div class="section__header reveal">
                 <span class="section__label">Отзывы</span>
                 <h2 class="section__title">Что говорят наши клиенты</h2>
+                <p class="section__desc">Реальные отзывы жителей Бишкека. Вы можете поделиться своим мнением без регистрации</p>
+                <div class="reviews__header-action">
+                    <button type="button" class="btn btn--secondary btn--sm" id="open-review-modal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Оставить отзыв
+                    </button>
+                </div>
             </div>
 
-            <!-- TODO: заменить отзывы-заглушки на реальные -->
-            <div class="reviews-grid">
+            <!-- Сетка отзывов (пользовательские отзывы добавляются сюда в начало) -->
+            <div class="reviews-grid" id="reviews-grid">
                 <article class="review-card reveal">
                     <div class="review-card__stars" aria-label="Оценка 5 из 5">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -798,6 +805,74 @@
             </a>
             <button class="modal__close-btn" id="close-modal">Вернуться на сайт</button>
         </div>
+    </div>
+
+    <!-- ================================================================
+         МОДАЛЬНОЕ ОКНО «Оставить отзыв» (без регистрации)
+         ================================================================ -->
+    <div class="modal" id="review-modal" aria-hidden="true" role="dialog" aria-labelledby="review-modal-title">
+        <div class="modal__overlay" id="review-modal-overlay"></div>
+        <div class="modal__content modal__content--review">
+            <button class="modal__close-corner" id="close-review-modal" aria-label="Закрыть модальное окно">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 class="modal__title" id="review-modal-title">Оставить отзыв</h3>
+            <p class="modal__text">Без регистрации. Ваш отзыв появится на сайте сразу.</p>
+
+            <form class="review-form" id="review-form" novalidate>
+                <!-- Имя -->
+                <div class="form-group">
+                    <label for="review-name" class="form-label">Ваше имя <span class="required">*</span></label>
+                    <input type="text" id="review-name" class="form-input" placeholder="Как вас зовут?" required maxlength="50" autocomplete="name">
+                    <span class="form-error" id="error-review-name">Введите ваше имя</span>
+                </div>
+
+                <!-- Услуга / мастер -->
+                <div class="form-group">
+                    <label for="review-master" class="form-label">Мастер или услуга</label>
+                    <select id="review-master" class="form-input form-select">
+                        <option value="Сантехник">Сантехник</option>
+                        <option value="Электрик">Электрик</option>
+                        <option value="Сборка мебели">Сборка мебели</option>
+                        <option value="Мелкий ремонт">Мелкий ремонт</option>
+                        <option value="Навеска">Навеска</option>
+                        <option value="Универсальный мастер" selected>Универсальный мастер</option>
+                    </select>
+                </div>
+
+                <!-- Звёздный рейтинг -->
+                <div class="form-group">
+                    <label class="form-label">Оценка</label>
+                    <div class="star-rating" id="star-rating" role="radiogroup" aria-label="Оценка работы в звёздах">
+                        <button type="button" class="star-btn active" data-rating="1" aria-label="1 звезда">★</button>
+                        <button type="button" class="star-btn active" data-rating="2" aria-label="2 звезды">★</button>
+                        <button type="button" class="star-btn active" data-rating="3" aria-label="3 звезды">★</button>
+                        <button type="button" class="star-btn active" data-rating="4" aria-label="4 звезды">★</button>
+                        <button type="button" class="star-btn active" data-rating="5" aria-label="5 звёзд">★</button>
+                    </div>
+                    <input type="hidden" id="review-rating" value="5">
+                </div>
+
+                <!-- Текст отзыва -->
+                <div class="form-group form-group--full">
+                    <label for="review-text" class="form-label">Ваш отзыв <span class="required">*</span></label>
+                    <textarea id="review-text" class="form-input form-textarea" placeholder="Расскажите, какую работу выполнял мастер и остались ли вы довольны..." rows="4" required maxlength="800"></textarea>
+                    <span class="form-error" id="error-review-text">Напишите несколько слов в отзыве</span>
+                </div>
+
+                <div class="modal__review-actions">
+                    <button type="submit" class="btn btn--primary btn--lg" id="submit-review-btn" style="width: 100%;">
+                        <span>Опубликовать отзыв</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Всплывающее уведомление (Toast) -->
+    <div class="toast" id="toast" role="alert" aria-live="polite">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="toast-text">Спасибо! Ваш отзыв опубликован на сайте.</span>
     </div>
 
     <script src="script.js"></script>

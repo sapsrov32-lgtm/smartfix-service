@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPrices();
     initServiceCards();
     initForm();
+    initReviewSystem();
     initFAQ();
     initHeroGlow();
     initFloatingButtons();
@@ -478,4 +479,238 @@ function closeModal() {
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+}
+
+/* =================================================================
+   СИСТЕМА ОТЗЫВОВ (без регистрации)
+   ================================================================= */
+const STORAGE_KEY_REVIEWS = 'smartfix_user_reviews';
+
+function initReviewSystem() {
+    const openBtn    = document.getElementById('open-review-modal');
+    const modal      = document.getElementById('review-modal');
+    const overlay    = document.getElementById('review-modal-overlay');
+    const closeBtn   = document.getElementById('close-review-modal');
+    const form       = document.getElementById('review-form');
+    const starBtns   = document.querySelectorAll('#star-rating .star-btn');
+    const ratingInput= document.getElementById('review-rating');
+
+    // Загрузить сохранённые отзывы
+    loadUserReviews();
+
+    if (!modal) return;
+
+    // Открытие модалки
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                const nameInput = document.getElementById('review-name');
+                if (nameInput) nameInput.focus();
+            }, 100);
+        });
+    }
+
+    // Закрытие модалки
+    const closeReviewModal = () => {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+
+    if (overlay) overlay.addEventListener('click', closeReviewModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeReviewModal);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeReviewModal();
+        }
+    });
+
+    // Звёздный рейтинг
+    if (starBtns.length && ratingInput) {
+        starBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const val = parseInt(btn.dataset.rating, 10);
+                highlightStars(val);
+            });
+
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.dataset.rating, 10);
+                ratingInput.value = val;
+                highlightStars(val);
+            });
+        });
+
+        const ratingContainer = document.getElementById('star-rating');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('mouseleave', () => {
+                const current = parseInt(ratingInput.value, 10) || 5;
+                highlightStars(current);
+            });
+        }
+    }
+
+    function highlightStars(count) {
+        starBtns.forEach(b => {
+            const r = parseInt(b.dataset.rating, 10);
+            b.classList.toggle('active', r <= count);
+        });
+    }
+
+    // Отправка формы отзыва
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('review-name');
+            const textInput = document.getElementById('review-text');
+            const masterVal = document.getElementById('review-master').value;
+            const ratingVal = parseInt(ratingInput.value, 10) || 5;
+
+            const name = nameInput.value.trim();
+            const text = textInput.value.trim();
+
+            let valid = true;
+
+            if (!name) {
+                showError('error-review-name');
+                nameInput.classList.add('error');
+                valid = false;
+            } else {
+                hideError('error-review-name');
+                nameInput.classList.remove('error');
+            }
+
+            if (!text) {
+                showError('error-review-text');
+                textInput.classList.add('error');
+                valid = false;
+            } else {
+                hideError('error-review-text');
+                textInput.classList.remove('error');
+            }
+
+            if (!valid) return;
+
+            const newReview = {
+                id: Date.now(),
+                name,
+                master: masterVal,
+                rating: ratingVal,
+                text,
+                date: 'Только что'
+            };
+
+            // Сохраняем в localStorage
+            saveUserReview(newReview);
+
+            // Добавляем в разметку наверх сетки
+            renderReviewCard(newReview, true);
+
+            // Очищаем форму и закрываем
+            form.reset();
+            ratingInput.value = 5;
+            highlightStars(5);
+            closeReviewModal();
+
+            // Показываем Toast
+            showToast('Спасибо! Ваш отзыв опубликован на сайте.');
+
+            // Скроллим к блоку отзывов
+            const reviewsSection = document.getElementById('reviews');
+            if (reviewsSection) {
+                reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+}
+
+function loadUserReviews() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY_REVIEWS);
+        if (!raw) return;
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+            // В обратном порядке, чтобы при prepend сохранился порядок
+            list.slice().reverse().forEach(item => renderReviewCard(item, false));
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки отзывов:', e);
+    }
+}
+
+function saveUserReview(review) {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY_REVIEWS);
+        const list = raw ? JSON.parse(raw) : [];
+        list.unshift(review);
+        localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(list));
+    } catch (e) {
+        console.error('Ошибка сохранения отзыва:', e);
+    }
+}
+
+function renderReviewCard(data, isNew = false) {
+    const grid = document.getElementById('reviews-grid');
+    if (!grid) return;
+
+    const article = document.createElement('article');
+    article.className = 'review-card' + (isNew ? ' review-card--new' : '');
+
+    // Звёздочки
+    let starsHtml = '';
+    for (let i = 0; i < 5; i++) {
+        const fill = i < data.rating ? 'currentColor' : 'none';
+        const stroke = i < data.rating ? 'none' : 'currentColor';
+        starsHtml += `<svg width="18" height="18" viewBox="0 0 24 24" fill="${fill}" stroke="${stroke}" stroke-width="1.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    }
+
+    const firstLetter = escapeHtml(data.name.charAt(0).toUpperCase() || 'К');
+    const safeName    = escapeHtml(data.name);
+    const safeMaster  = escapeHtml(data.master);
+    const safeText    = escapeHtml(data.text);
+    const safeDate    = escapeHtml(data.date || 'Недавно');
+
+    article.innerHTML = `
+        <div class="review-card__stars" aria-label="Оценка ${data.rating} из 5">
+            ${starsHtml}
+        </div>
+        <blockquote class="review-card__text">«${safeText}»</blockquote>
+        <div class="review-card__author">
+            <div class="review-card__avatar">${firstLetter}</div>
+            <div>
+                <div class="review-card__name">${safeName}</div>
+                <div class="review-card__service">${safeMaster}</div>
+            </div>
+            <div class="review-card__date">${safeDate}</div>
+        </div>
+    `;
+
+    grid.prepend(article);
+}
+
+function showToast(text) {
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toast-text');
+    if (!toast) return;
+
+    if (toastText && text) toastText.textContent = text;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 4000);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
