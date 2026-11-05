@@ -149,10 +149,11 @@ function initCounters() {
 }
 
 function animateCounter(el) {
-    const target   = parseFloat(el.dataset.target);
-    const decimal  = el.dataset.decimal === 'true';
-    const duration = 2000;
-    const start    = performance.now();
+    const target       = parseFloat(el.dataset.target);
+    const decimal      = el.dataset.decimal === 'true';
+    const finalDisplay = el.dataset.display;
+    const duration     = 2000;
+    const start        = performance.now();
 
     const update = (now) => {
         const elapsed  = now - start;
@@ -168,9 +169,9 @@ function animateCounter(el) {
         if (progress < 1) {
             requestAnimationFrame(update);
         } else {
-            el.textContent = decimal
+            el.textContent = finalDisplay || (decimal
                 ? target.toFixed(1)
-                : target.toLocaleString('ru-RU');
+                : target.toLocaleString('ru-RU'));
         }
     };
 
