@@ -14,6 +14,10 @@ const WHATSAPP_BASE   = `https://wa.me/${WHATSAPP_NUMBER}`;
 // Предзаполненный текст для кнопок «Написать нам»
 const WA_DEFAULT_TEXT = 'Здравствуйте! Хочу вызвать мастера';
 
+// ----- SUPABASE CONFIG (База данных для отзывов) -----
+const SUPABASE_URL = 'https://ctpesdissrutihmgghsn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0cGVzZGlzc3J1dGlobWdnaHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNjk0NzUsImV4cCI6MjEwODc0NTQ3NX0.ekKjoSXNNxCHGPGZH_h4H8hT9ZltXYw7CixWNk6UeTU';
+
 // ----- ЦЕНЫ НА УСЛУГИ (редактировать в одном месте) -----
 const MASTER_PRICES = [
     { id: 'plumber',   master: 'Сантехник',           price: 500, currency: 'сом' },
@@ -482,7 +486,7 @@ function closeModal() {
 }
 
 /* =================================================================
-   СИСТЕМА ОТЗЫВОВ (без регистрации)
+   СИСТЕМА ОТЗЫВОВ (через Supabase — без регистрации)
    ================================================================= */
 const STORAGE_KEY_REVIEWS = 'smartfix_user_reviews';
 
@@ -495,8 +499,8 @@ function initReviewSystem() {
     const starBtns   = document.querySelectorAll('#star-rating .star-btn');
     const ratingInput= document.getElementById('review-rating');
 
-    // Загрузить сохранённые отзывы
-    loadUserReviews();
+    // Загрузить отзывы из Supabase (с fallback на локальные)
+    loadReviews();
 
     if (!modal) return;
 
@@ -562,13 +566,14 @@ function initReviewSystem() {
 
     // Отправка формы отзыва
     if (form) {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const nameInput = document.getElementById('review-name');
             const textInput = document.getElementById('review-text');
             const masterVal = document.getElementById('review-master').value;
             const ratingVal = parseInt(ratingInput.value, 10) || 5;
+            const submitBtn = document.getElementById('submit-review-btn');
 
             const name = nameInput.value.trim();
             const text = textInput.value.trim();
@@ -596,7 +601,6 @@ function initReviewSystem() {
             if (!valid) return;
 
             const newReview = {
-                id: Date.now(),
                 name,
                 master: masterVal,
                 rating: ratingVal,
@@ -604,20 +608,34 @@ function initReviewSystem() {
                 date: 'Только что'
             };
 
-            // Сохраняем в localStorage
-            saveUserReview(newReview);
+            // Индикация сохранения
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('btn--loading');
+            }
+
+            // Сохраняем в Supabase
+            const savedItem = await saveReviewToSupabase(newReview);
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn--loading');
+            }
 
             // Добавляем в разметку наверх сетки
-            renderReviewCard(newReview, true);
+            renderReviewCard(newReview, true, true);
 
-            // Очищаем форму и закрываем
+            // Кэшируем также локально
+            cacheLocalReview(newReview);
+
+            // Очищаем форму и закрываем модалку
             form.reset();
             ratingInput.value = 5;
             highlightStars(5);
             closeReviewModal();
 
             // Показываем Toast
-            showToast('Спасибо! Ваш отзыв опубликован на сайте.');
+            showToast('Спасибо! Ваш отзыв сохранён в базе данных и опубликован.');
 
             // Скроллим к блоку отзывов
             const reviewsSection = document.getElementById('reviews');
@@ -628,32 +646,104 @@ function initReviewSystem() {
     }
 }
 
-function loadUserReviews() {
+/**
+ * Загрузка отзывов из Supabase
+ */
+async function loadReviews() {
+    const grid = document.getElementById('reviews-grid');
+    if (!grid) return;
+
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=*&is_approved=eq.true&order=created_at.desc`, {
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+
+        if (response.ok) {
+            const list = await response.json();
+            if (Array.isArray(list) && list.length > 0) {
+                // Очищаем статичные заглушки и рендерим реальные отзывы из базы
+                grid.innerHTML = '';
+                list.forEach(item => {
+                    renderReviewCard({
+                        id: item.id,
+                        name: item.name,
+                        master: item.master,
+                        rating: item.rating,
+                        text: item.text,
+                        date: formatReviewDate(item.created_at)
+                    }, false, false);
+                });
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('Supabase недоступен, используем резервный кэш:', e);
+    }
+
+    // Если нет сети или запрос упал — используем сохранённые в localStorage
+    loadCachedReviews();
+}
+
+/**
+ * Сохранение отзыва в Supabase
+ */
+async function saveReviewToSupabase(review) {
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({
+                name: review.name,
+                master: review.master,
+                rating: review.rating,
+                text: review.text,
+                is_approved: true
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data && data[0] ? data[0] : review;
+        }
+    } catch (e) {
+        console.error('Ошибка сохранения в Supabase:', e);
+    }
+    return null;
+}
+
+function loadCachedReviews() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY_REVIEWS);
         if (!raw) return;
         const list = JSON.parse(raw);
         if (Array.isArray(list)) {
-            // В обратном порядке, чтобы при prepend сохранился порядок
-            list.slice().reverse().forEach(item => renderReviewCard(item, false));
+            list.slice().reverse().forEach(item => renderReviewCard(item, false, true));
         }
     } catch (e) {
-        console.error('Ошибка загрузки отзывов:', e);
+        console.error('Ошибка загрузки кэшированных отзывов:', e);
     }
 }
 
-function saveUserReview(review) {
+function cacheLocalReview(review) {
     try {
         const raw = localStorage.getItem(STORAGE_KEY_REVIEWS);
         const list = raw ? JSON.parse(raw) : [];
         list.unshift(review);
         localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(list));
     } catch (e) {
-        console.error('Ошибка сохранения отзыва:', e);
+        console.error('Ошибка кэширования отзыва:', e);
     }
 }
 
-function renderReviewCard(data, isNew = false) {
+function renderReviewCard(data, isNew = false, prepend = true) {
     const grid = document.getElementById('reviews-grid');
     if (!grid) return;
 
@@ -689,7 +779,22 @@ function renderReviewCard(data, isNew = false) {
         </div>
     `;
 
-    grid.prepend(article);
+    if (prepend) {
+        grid.prepend(article);
+    } else {
+        grid.appendChild(article);
+    }
+}
+
+function formatReviewDate(dateString) {
+    if (!dateString) return 'Недавно';
+    try {
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return 'Недавно';
+        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    } catch {
+        return 'Недавно';
+    }
 }
 
 function showToast(text) {
@@ -702,7 +807,7 @@ function showToast(text) {
 
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 4000);
+    }, 4500);
 }
 
 function escapeHtml(str) {
