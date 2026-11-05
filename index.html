@@ -377,99 +377,80 @@
     </section>
 
     <!-- ================================================================
-         ЦЕНЫ — карточки «от ... сом» для основных услуг
+         ЦЕНЫ — карточки с фиксированной стоимостью вызова
          ================================================================ -->
     <section class="section section--dark" id="prices">
         <div class="container">
             <div class="section__header reveal">
                 <span class="section__label">Цены</span>
                 <h2 class="section__title">Прозрачные цены без скрытых доплат</h2>
-                <p class="section__desc">Точную стоимость мастер назовёт после осмотра. Вот ориентировочные цены на популярные услуги</p>
+                <p class="section__desc">Точную стоимость мастер назовёт после осмотра. Вот ориентировочные цены на вызов мастера</p>
             </div>
 
-            <!-- TODO: заменить цены-заглушки на реальные -->
             <div class="prices-grid">
-                <div class="price-card reveal">
+                <!-- Сантехник -->
+                <div class="price-card reveal" data-master="Сантехник" data-price="500">
                     <div class="price-card__icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
                     </div>
                     <h3 class="price-card__title">Сантехник</h3>
-                    <div class="price-card__price">от <strong>500</strong> сом</div>
-                    <ul class="price-card__list">
-                        <li>Замена смесителя — от 800 сом</li>
-                        <li>Устранение течи — от 500 сом</li>
-                        <li>Установка раковины — от 1 200 сом</li>
-                    </ul>
+                    <div class="price-card__subtitle">цена за вызов</div>
+                    <div class="price-card__price"><strong>500</strong> сом</div>
                     <a href="#form" class="btn btn--primary btn--sm price-card__btn" data-master="Сантехник">Вызвать</a>
                 </div>
 
-                <div class="price-card reveal">
+                <!-- Электрик -->
+                <div class="price-card reveal" data-master="Электрик" data-price="500">
                     <div class="price-card__icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                     </div>
                     <h3 class="price-card__title">Электрик</h3>
-                    <div class="price-card__price">от <strong>500</strong> сом</div>
-                    <ul class="price-card__list">
-                        <li>Замена розетки — от 400 сом</li>
-                        <li>Установка люстры — от 600 сом</li>
-                        <li>Диагностика проводки — от 500 сом</li>
-                    </ul>
+                    <div class="price-card__subtitle">цена за вызов</div>
+                    <div class="price-card__price"><strong>500</strong> сом</div>
                     <a href="#form" class="btn btn--primary btn--sm price-card__btn" data-master="Электрик">Вызвать</a>
                 </div>
 
-                <div class="price-card reveal">
+                <!-- Сборка мебели -->
+                <div class="price-card reveal" data-master="Сборка мебели" data-price="800">
                     <div class="price-card__icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                     </div>
                     <h3 class="price-card__title">Сборка мебели</h3>
-                    <div class="price-card__price">от <strong>800</strong> сом</div>
-                    <ul class="price-card__list">
-                        <li>Сборка шкафа — от 1 000 сом</li>
-                        <li>Сборка кухни — от 2 000 сом</li>
-                        <li>Сборка кровати — от 800 сом</li>
-                    </ul>
+                    <div class="price-card__subtitle">цена за вызов</div>
+                    <div class="price-card__price"><strong>800</strong> сом</div>
                     <a href="#form" class="btn btn--primary btn--sm price-card__btn" data-master="Сборка мебели">Вызвать</a>
                 </div>
 
-                <div class="price-card reveal">
+                <!-- Мелкий ремонт -->
+                <div class="price-card reveal" data-master="Мелкий ремонт" data-price="400">
                     <div class="price-card__icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                     </div>
                     <h3 class="price-card__title">Мелкий ремонт</h3>
-                    <div class="price-card__price">от <strong>400</strong> сом</div>
-                    <ul class="price-card__list">
-                        <li>Ремонт замка — от 400 сом</li>
-                        <li>Регулировка дверей — от 500 сом</li>
-                        <li>Столярные работы — от 600 сом</li>
-                    </ul>
+                    <div class="price-card__subtitle">цена за вызов</div>
+                    <div class="price-card__price"><strong>400</strong> сом</div>
                     <a href="#form" class="btn btn--primary btn--sm price-card__btn" data-master="Мелкий ремонт">Вызвать</a>
                 </div>
 
-                <div class="price-card reveal">
+                <!-- Навеска -->
+                <div class="price-card reveal" data-master="Навеска" data-price="300">
                     <div class="price-card__icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     </div>
                     <h3 class="price-card__title">Навеска</h3>
-                    <div class="price-card__price">от <strong>300</strong> сом</div>
-                    <ul class="price-card__list">
-                        <li>Навеска полки — от 300 сом</li>
-                        <li>Установка карниза — от 400 сом</li>
-                        <li>Монтаж ТВ — от 500 сом</li>
-                    </ul>
+                    <div class="price-card__subtitle">цена за вызов</div>
+                    <div class="price-card__price"><strong>300</strong> сом</div>
                     <a href="#form" class="btn btn--primary btn--sm price-card__btn" data-master="Навеска">Вызвать</a>
                 </div>
 
-                <div class="price-card price-card--accent reveal">
+                <!-- Универсальный мастер -->
+                <div class="price-card price-card--accent reveal" data-master="Универсальный мастер" data-price="500">
                     <div class="price-card__icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                     </div>
                     <h3 class="price-card__title">Универсальный мастер</h3>
-                    <div class="price-card__price">от <strong>500</strong> сом</div>
-                    <ul class="price-card__list">
-                        <li>Несколько видов работ за визит</li>
-                        <li>Консультация — бесплатно</li>
-                        <li>Выезд — бесплатно</li>
-                    </ul>
+                    <div class="price-card__subtitle">цена за вызов</div>
+                    <div class="price-card__price"><strong>500</strong> сом</div>
                     <a href="#form" class="btn btn--primary btn--sm price-card__btn" data-master="Универсальный мастер">Вызвать</a>
                 </div>
             </div>

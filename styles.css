@@ -964,7 +964,7 @@ h1, h2, h3, h4 {
    ================================================================= */
 .prices-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
 }
 
@@ -972,8 +972,11 @@ h1, h2, h3, h4 {
     background: var(--color-dark-card);
     border: 1px solid var(--border-dark);
     border-radius: var(--radius-xl);
-    padding: 2rem;
+    padding: 2.25rem 2rem;
     transition: all 0.4s var(--ease-out);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .price-card:hover {
@@ -996,47 +999,43 @@ h1, h2, h3, h4 {
     background: var(--color-accent-soft);
     border-radius: var(--radius-sm);
     color: var(--color-accent);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .price-card__title {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.25rem;
     color: var(--text-on-dark);
 }
 
-.price-card__price {
-    font-size: 1rem;
+.price-card__subtitle {
+    font-size: 0.85rem;
     color: var(--text-on-dark-muted);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.price-card__price {
+    font-size: 1.05rem;
+    color: var(--text-on-dark-muted);
+    margin-bottom: 1.75rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
 }
 
 .price-card__price strong {
     font-family: var(--font-heading);
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 800;
     color: var(--color-accent);
-}
-
-.price-card__list {
-    margin-bottom: 1.5rem;
-}
-
-.price-card__list li {
-    padding: 0.4rem 0;
-    font-size: 0.875rem;
-    color: var(--text-on-dark-muted);
-    border-bottom: 1px solid var(--border-dark);
-}
-
-.price-card__list li:last-child {
-    border-bottom: none;
+    line-height: 1;
 }
 
 .price-card__btn {
     width: 100%;
     text-align: center;
+    margin-top: auto;
 }
 
 /* =================================================================
@@ -1693,6 +1692,10 @@ h1, h2, h3, h4 {
 
     .stats-grid {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .prices-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .footer__inner {

@@ -14,6 +14,16 @@ const WHATSAPP_BASE   = `https://wa.me/${WHATSAPP_NUMBER}`;
 // Предзаполненный текст для кнопок «Написать нам»
 const WA_DEFAULT_TEXT = 'Здравствуйте! Хочу вызвать мастера';
 
+// ----- ЦЕНЫ НА УСЛУГИ (редактировать в одном месте) -----
+const MASTER_PRICES = [
+    { id: 'plumber',   master: 'Сантехник',           price: 500, currency: 'сом' },
+    { id: 'electric',  master: 'Электрик',            price: 500, currency: 'сом' },
+    { id: 'furniture', master: 'Сборка мебели',       price: 800, currency: 'сом' },
+    { id: 'repair',    master: 'Мелкий ремонт',       price: 400, currency: 'сом' },
+    { id: 'mount',     master: 'Навеска',             price: 300, currency: 'сом' },
+    { id: 'universal', master: 'Универсальный мастер', price: 500, currency: 'сом' }
+];
+
 // ----- DOM Ready -----
 document.addEventListener('DOMContentLoaded', () => {
     initHeader();
@@ -21,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSmoothScroll();
     initRevealAnimations();
     initCounters();
+    initPrices();
     initServiceCards();
     initForm();
     initFAQ();
@@ -159,6 +170,24 @@ function animateCounter(el) {
     };
 
     requestAnimationFrame(update);
+}
+
+/* =================================================================
+   ЦЕНЫ — синхронизация цен из единого массива MASTER_PRICES
+   ================================================================= */
+function initPrices() {
+    const cards = document.querySelectorAll('.price-card[data-master]');
+    cards.forEach(card => {
+        const masterName = card.dataset.master;
+        const config = MASTER_PRICES.find(item => item.master === masterName);
+        if (config) {
+            card.dataset.price = config.price;
+            const priceElem = card.querySelector('.price-card__price strong');
+            if (priceElem) {
+                priceElem.textContent = config.price.toLocaleString('ru-RU');
+            }
+        }
+    });
 }
 
 /* =================================================================
